@@ -10,20 +10,21 @@ import (
 	"github.com/joho/godotenv"
 )
 
-
-func init(){
+func init() {
 	// load .env file if not in production
-	if os.Getenv("DEV_MODE") != "PRODUCTION"{
+	if os.Getenv("DEV_MODE") != "PRODUCTION" {
 		err := godotenv.Load()
-		if err != nil{
+		if err != nil {
 			log.Fatal(err)
 		}
 	}
+	clan, err := GetClans(os.Getenv("CLAN_TAG"))
+
 }
 
-func main(){
+func main() {
 	discord, err := discordgo.New("Bot " + os.Getenv("DISCORD_TOKEN"))
-	if err != nil{
+	if err != nil {
 		log.Fatal("ERROR: creating discord session failed", err)
 	}
 
@@ -45,9 +46,7 @@ func main(){
 	// Cleanly close down the Discord session.
 	discord.Close()
 
-
 }
-
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Ignore all messages created by the bot itself
