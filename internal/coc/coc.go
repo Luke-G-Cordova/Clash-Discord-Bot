@@ -9,7 +9,8 @@ import (
 
 func GetClans(tag string) (*Clan, error) {
 
-	req, err := http.NewRequest("GET", "https://api.clashofclans.com/v1/clans/%232"+tag, nil)
+	url := "https://api.clashofclans.com/v1/clans/%23" + tag
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
