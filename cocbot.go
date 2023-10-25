@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/Luke-G-Cordova/Clash-Discord-Bot/internal/coc"
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
 )
@@ -18,7 +19,12 @@ func init() {
 			log.Fatal(err)
 		}
 	}
-	clan, err := GetClans(os.Getenv("CLAN_TAG"))
+	clan, err := coc.GetClans(os.Getenv("CLAN_TAG"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println(clan)
 
 }
 
