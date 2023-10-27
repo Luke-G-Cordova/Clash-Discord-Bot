@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func GetClans(tag string) (*Clan, error) {
+func GetClan(tag string) (*Clan, error) {
 
 	url := "https://api.clashofclans.com/v1/clans/%23" + tag
 	req, err := http.NewRequest("GET", url, nil)
