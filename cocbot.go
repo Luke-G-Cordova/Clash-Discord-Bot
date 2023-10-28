@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"github.com/Luke-G-Cordova/Clash-Discord-Bot/internal/coc"
 	"github.com/bwmarrin/discordgo"
@@ -37,41 +39,40 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	setupServer(discord)
-	// if err != nil {
-	// 	log.Fatal("ERROR: creating discord session failed", err)
-	// }
+	if err != nil {
+		log.Fatal("ERROR: creating discord session failed", err)
+	}
 
-	// discord.AddHandler(messageCreate)
-	// discord.AddHandler(memberJoin)
+	discord.AddHandler(messageCreate)
+	discord.AddHandler(memberReact)
 
-	// members, err := discord.GuildMembers(os.Getenv("SERVER_ID"), "0", 100)
-	// if err != nil {
-	// 	log.Fatal("error getting members: ", err)
-	// }
+	members, err := discord.GuildMembers(os.Getenv("SERVER_ID"), "0", 100)
+	if err != nil {
+		log.Fatal("error getting members: ", err)
+	}
 
-	// discord.Identify.Intents |= discordgo.IntentsGuildMessages
-	// discord.Identify.Intents |= discordgo.IntentsGuildMembers
+	discord.Identify.Intents |= discordgo.IntentsGuildMessages
+	discord.Identify.Intents |= discordgo.IntentsGuildMembers
 
-	// err = discord.Open()
-	// if err != nil {
-	// 	log.Fatal("error opening connection: ", err)
-	// }
+	err = discord.Open()
+	if err != nil {
+		log.Fatal("error opening connection: ", err)
+	}
 
-	// log.Println("Bot is now running.  Press CTRL-C to exit.")
-	// sc := make(chan os.Signal, 1)
-	// signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	// <-sc
+	log.Println("Bot is now running.  Press CTRL-C to exit.")
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	<-sc
 
-	// // Cleanly close down the Discord session.
-	// discord.Close()
+	// Cleanly close down the Discord session.
+	discord.Close()
 
 }
 
-func setupServer(discord *discordgo.Session) {
+func setupServer(discord *discordgo.Session) (*discordgo.Channel, error) {
 	channels, err := discord.GuildChannels(os.Getenv("SERVER_ID"))
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
 
 	var channelGroups []*discordgo.Channel
@@ -92,14 +93,19 @@ func setupServer(discord *discordgo.Session) {
 		topGroup = channelGroups[0]
 	}
 
-	// welcome, err := discord.GuildChannelCreate(os.Getenv("SERVER_ID"), "Welcome", discordgo.ChannelTypeGuildText)
-	// if err != nil {
-	// 	log.Fatal("Could not create Welcome channel", err)
-	// }
-	// discord.ChannelMessageSend(welcome.ID, "hello")
+	welcome, err := discord.GuildChannelCreate(os.Getenv("SERVER_ID"), "Welcome", discordgo.ChannelTypeGuildText)
+	if err != nil {
+		return nil, err
+	}
+
+	discord.ChannelMessageSend(welcome.ID, "React to one of the names below to change your nick name in this server: ")
+	for _, mem := range cocMemberList {
+		discord.ChannelMessageSend(welcome.ID, mem.Name)
+	}
+	return welcome, nil
 }
 
-func memberJoin(discord *discordgo.Session, m *discordgo.MessageReaction) {
+func memberReact(discord *discordgo.Session, m *discordgo.MessageReaction) {
 	if m.ChannelID == os.Getenv("WELCOME_CHANNEL_ID") {
 
 	}
